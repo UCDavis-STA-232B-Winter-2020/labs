@@ -123,6 +123,13 @@ very_cool_model %>%
   ranef()
 ```
 
+```{r}
+very_cool_model %>%
+  VarCorr() %>%
+  print(., comp = c("Variance","Std.Dev."))
+```
+
+
 ## Lamb data
 
 Let's look at the Lamb dataset in the textbook (the table 1.2 in Jiang 2007, same as the table 1 in Harville 1985).

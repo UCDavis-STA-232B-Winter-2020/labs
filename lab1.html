@@ -593,6 +593,13 @@ very_cool_model %&gt;%
 ## 372  12.3145921   1.2840221
 ## 
 ## with conditional variances for &quot;Subject&quot;</code></pre>
+<pre class="r"><code>very_cool_model %&gt;%
+  VarCorr() %&gt;%
+  print(., comp = c(&quot;Variance&quot;,&quot;Std.Dev.&quot;))</code></pre>
+<pre><code>##  Groups   Name        Variance Std.Dev. Corr 
+##  Subject  (Intercept) 612.100  24.7407       
+##           Days         35.072   5.9221  0.066
+##  Residual             654.940  25.5918</code></pre>
 <div id="lamb-data" class="section level2">
 <h2>Lamb data</h2>
 <p>Let’s look at the Lamb dataset in the textbook (the table 1.2 in Jiang 2007, same as the table 1 in Harville 1985).</p>
