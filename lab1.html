@@ -536,56 +536,61 @@ library(tidyverse)</code></pre>
 </table>
 <p>Lets fit a linear mixed effect model!</p>
 <pre class="r"><code>very_cool_model &lt;- sleepstudy %&gt;%
-  lmer(Reaction ~ 1 + (Days | Subject), data = .)
+  lmer(Reaction ~ Days + (Days | Subject), data = .)
 
 very_cool_model %&gt;%
   summary()</code></pre>
 <pre><code>## Linear mixed model fit by REML [&#39;lmerMod&#39;]
-## Formula: Reaction ~ 1 + (Days | Subject)
+## Formula: Reaction ~ Days + (Days | Subject)
 ##    Data: .
 ## 
-## REML criterion at convergence: 1769.8
+## REML criterion at convergence: 1743.6
 ## 
 ## Scaled residuals: 
 ##     Min      1Q  Median      3Q     Max 
-## -4.0449 -0.4486  0.0089  0.4819  5.2186 
+## -3.9536 -0.4634  0.0231  0.4634  5.1793 
 ## 
 ## Random effects:
-##  Groups   Name        Variance Std.Dev. Corr 
-##  Subject  (Intercept) 651.6    25.53         
-##           Days        142.2    11.93    -0.18
-##  Residual             654.9    25.59         
+##  Groups   Name        Variance Std.Dev. Corr
+##  Subject  (Intercept) 612.10   24.741       
+##           Days         35.07    5.922   0.07
+##  Residual             654.94   25.592       
 ## Number of obs: 180, groups:  Subject, 18
 ## 
 ## Fixed effects:
 ##             Estimate Std. Error t value
-## (Intercept)   257.76       6.76   38.13</code></pre>
+## (Intercept)  251.405      6.825  36.838
+## Days          10.467      1.546   6.771
+## 
+## Correlation of Fixed Effects:
+##      (Intr)
+## Days -0.138</code></pre>
 <pre class="r"><code>very_cool_model %&gt;%
   fixef()</code></pre>
-<pre><code>## (Intercept) 
-##    257.7622</code></pre>
+<pre><code>## (Intercept)        Days 
+##   251.40510    10.46729</code></pre>
 <pre class="r"><code>very_cool_model %&gt;%
   ranef()</code></pre>
 <pre><code>## $Subject
-##     (Intercept)       Days
-## 308   -8.304993 20.6010269
-## 309  -39.402398  0.2135211
-## 310  -40.247926  3.8918664
-## 330   24.244775  4.1171150
-## 331   21.476108  6.1589652
-## 332    5.706141  9.5231905
-## 333   13.758848  9.5157838
-## 334  -12.158381 11.2238002
-## 335    3.711084 -2.5963842
-## 337   25.950356 19.6695601
-## 349  -30.871497 11.4860944
-## 350  -22.293637 17.7185058
-## 351    3.101614  6.3674017
-## 352   15.159485 13.8582027
-## 369   -1.113833 10.9022191
-## 370  -33.978438 15.7360708
-## 371   -2.302158  8.7573841
-## 372    7.954974 11.3074308
+##     (Intercept)        Days
+## 308   2.2585509   9.1989758
+## 309 -40.3987381  -8.6196806
+## 310 -38.9604090  -5.4488565
+## 330  23.6906196  -4.8143503
+## 331  22.2603126  -3.0699116
+## 332   9.0395679  -0.2721770
+## 333  16.8405086  -0.2236361
+## 334  -7.2326151   1.0745816
+## 335  -0.3336684 -10.7521652
+## 337  34.8904868   8.6282652
+## 349 -25.2102286   1.1734322
+## 350 -13.0700342   6.6142178
+## 351   4.5778642  -3.0152621
+## 352  20.8636782   3.5360011
+## 369   3.2754656   0.8722149
+## 370 -25.6129993   4.8224850
+## 371   0.8070461  -0.9881562
+## 372  12.3145921   1.2840221
 ## 
 ## with conditional variances for &quot;Subject&quot;</code></pre>
 <div id="lamb-data" class="section level2">

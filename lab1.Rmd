@@ -106,7 +106,7 @@ sleepstudy %>%
 Lets fit a linear mixed effect model!
 ```{r}
 very_cool_model <- sleepstudy %>%
-  lmer(Reaction ~ 1 + (Days | Subject), data = .)
+  lmer(Reaction ~ Days + (Days | Subject), data = .)
 
 very_cool_model %>%
   summary()
