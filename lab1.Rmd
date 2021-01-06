@@ -1,0 +1,183 @@
+---
+title: "STA232B Lab 1"
+author: "Po"
+date: "1/6/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# R
+
+```{r message=FALSE, eval=FALSE}
+help.start()
+```
+
+My favorite material for learning R is the manual "An Introduction to R".
+
+# R package `lme4`
+
+The packages we are using today are `lme4` and `tidyverse`.
+```{r message=FALSE, eval=FALSE}
+install.packages("lme4")
+install.packages("tidyverse")
+```
+
+Load packages:
+```{r message=FALSE}
+library(lme4)
+library(tidyverse)
+```
+
+## `lme4`
+
+What is `lme4`?
+
+- https://arxiv.org/pdf/1406.5823.pdf
+
+  Maximum likelihood or restricted maximum likelihood (REML) estimates of the parameters in linear mixed-effects models can be determined using the lmer function in the `lme4` package for R. As for most model-fitting functions in R, the model is described in an lmer call by a formula, in this case including both fixed- and random-effects terms. The formula and data together determine a numerical representation of the model from which the profiled deviance or the profiled REML criterion can be evaluated as a function of some of the model parameters. The appropriate criterion is optimized, using one of the constrained optimization functions in R, to provide the parameter estimates. We describe the structure of the model, the steps in evaluating the profiled deviance or REML criterion, and the structure of classes or types that represents such a model. Sufficient detail is included to allow specialization of these structures by users who wish to write functions to fit specialized linear mixed models, such as models incorporating pedigrees or smoothing splines, that are not easily expressible in the formula language used by lmer.
+
+- https://github.com/lme4/lme4
+  - Features
+    - Efficient for large data sets, using algorithms from the Eigen linear algebra package via the RcppEigen interface layer.
+    - Allows arbitrarily many nested and crossed random effects.
+    - Fits generalized linear mixed models (GLMMs) and nonlinear mixed models (NLMMs) via Laplace approximation or adaptive Gauss-Hermite quadrature; GLMMs allow user-defined families and link functions.
+    - Incorporates likelihood profiling and parametric bootstrapping.
+
+## `tidyverse`
+
+- https://www.tidyverse.org/
+
+  The tidyverse is an opinionated collection of R packages designed for data science. All packages share an underlying design philosophy, grammar, and data structures.
+
+This package(s?) is not essential, just for shortening/beautifying some codes here. Indeed everything could be written in vanilla R built-in functions.
+
+# Reaction times in a sleep deprivation study
+
+```{r}
+?sleepstudy
+```
+
+- **Description**
+
+  The average reaction time per day for subjects in a sleep deprivation study. On day 0 the subjects had their normal amount of sleep. Starting that night they were restricted to 3 hours of sleep per night. The observations represent the average reaction time on a series of tests given each day to each subject.
+
+- **Format**
+
+  A data frame with 180 observations on the following 3 variables.
+
+  - **Reaction**
+  
+    Average reaction time (ms)
+  
+  - **Days**
+  
+    Number of days of sleep deprivation
+  
+  - **Subject**
+  
+    Subject number on which the observation was made.
+
+```{r}
+sleepstudy %>%
+  head(20)
+```
+
+Lets plot the "time series" (?) for each subject.
+```{r}
+sleepstudy %>%
+  ggplot(aes(x = Days, y = Reaction)) + 
+  geom_point() + 
+  geom_smooth(method = "lm") + 
+  facet_wrap(~ Subject, ncol = 6)
+```
+
+Lets fit a regression line for each subject.
+```{r}
+sleepstudy %>%
+  group_by(Subject) %>%
+  group_modify(~ broom::tidy(lm(Reaction ~ Days, data = .))) %>%
+  head %>%
+  knitr::kable()
+```
+
+Lets fit a linear mixed effect model!
+```{r}
+very_cool_model <- sleepstudy %>%
+  lmer(Reaction ~ 1 + (Days | Subject), data = .)
+
+very_cool_model %>%
+  summary()
+```
+
+
+```{r}
+very_cool_model %>%
+  fixef()
+```
+
+```{r}
+very_cool_model %>%
+  ranef()
+```
+
+## Lamb data
+
+Let's look at the Lamb dataset in the textbook (the table 1.2 in Jiang 2007, same as the table 1 in Harville 1985).
+
+>    Harville, David A., and Alan P. Fenech. "Confidence Intervals for a Variance Ratio, or for Heritability, in an Unbalanced Mixed Linear Model." Biometrics 41, no. 1 (1985): 137-52. doi:10.2307/2530650. <br>
+> https://www.jstor.org/stable/2530650
+
+> For purposes of illustration, we introduce in Table 1 some data consisting of the weights at
+> birth of 62 single-birth male lambs. These data (provided by G. E. Bradford, Department
+> of Animal Science, University of California, Davis) come from five distinct population
+> lines (two control lines and three selection lines). Each lamb was the progeny of one of 23
+> rams, and each lamb had a different dam. Age of dam was recorded as belonging to one of
+> three categories, numbered 1 (1-2 years), 2 (2-3 years), and 3 (over 3 years).
+
+Sheep glossary: http://www.sheep101.info/201/glossary.html
+
+`lamb_lab1.csv` contains a subset of the data (Line 1 and 2).
+
+```{r}
+lamb <- read.csv(file = "lamb_lab1.csv") %>%
+  mutate_at(c("Sire", "Line", "Age"), as.factor)
+
+lamb %>% 
+  knitr::kable()
+```
+
+Let's fit a linear mixed effect model!
+```{r}
+lamb_fitted <- lmer(Weight ~ Line + Age - 1 + (1|Sire), data=lamb)
+lamb_fitted %>%
+  summary()
+```
+
+```{r}
+lamb_fitted %>%
+  VarCorr() %>%
+  print(., comp = c("Variance","Std.Dev."))
+```
+
+```{r}
+lamb_fitted %>%
+  model.matrix(., type = "fixed")
+```
+
+```{r}
+lamb_fitted %>%
+  model.matrix(., type = "random")
+```
+
+```{r}
+lamb_fitted %>%
+  fixef()
+```
+
+```{r}
+lamb_fitted %>%
+  ranef()
+```
