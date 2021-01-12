@@ -1,7 +1,7 @@
 ---
-title: "STA232B Lab 1"
+title: "STA232B Lab 2"
 author: "Po"
-date: "1/6/2021"
+date: "1/13/2021"
 output: html_document
 ---
 
@@ -42,7 +42,7 @@ https://en.wikipedia.org/wiki/Multivariate_normal_distribution
 
 ## `lme4`
 
-```{r, eval=F}
+```{r, eval=F, message=FALSE}
 library(lme4)
 ?lme4
 ?merMod
@@ -74,7 +74,7 @@ Sheep glossary: http://www.sheep101.info/201/glossary.html
 
 `lamb_lab1.csv` contains a subset of the data (Line 1 and 2).
 
-```{r}
+```{r message=FALSE}
 library(lme4)
 library(tidyverse)
 
