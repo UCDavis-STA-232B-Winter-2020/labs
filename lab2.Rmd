@@ -46,13 +46,7 @@ https://en.wikipedia.org/wiki/Multivariate_normal_distribution
 library(lme4)
 ?lme4
 ?merMod
-```
-
-```{r}
 methods(class="merMod")
-```
-
-```{r}
 ?getME
 ```
 
@@ -76,13 +70,12 @@ Sheep glossary: http://www.sheep101.info/201/glossary.html
 
 ```{r message=FALSE}
 library(lme4)
-library(tidyverse)
 
-lamb <- read.csv(file = "lamb_lab1.csv") %>%
-  mutate_at(c("Sire", "Line", "Age"), as.factor)
+lamb <- read.csv(file = "lamb_lab1.csv")
+cols <- c("Sire", "Line", "Age")
+lamb[cols] <- lapply(lamb[cols], as.factor)
 
-lamb %>% 
-  knitr::kable()
+knitr::kable(lamb)
 ```
 
 Let's fit a linear mixed effect model!

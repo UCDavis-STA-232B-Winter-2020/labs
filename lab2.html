@@ -418,12 +418,9 @@ summary {
 <h2><code>lme4</code></h2>
 <pre class="r"><code>library(lme4)
 ?lme4
-?merMod</code></pre>
-<pre class="r"><code>methods(class=&quot;merMod&quot;)</code></pre>
-<pre><code>## no methods found</code></pre>
-<pre class="r"><code>?getME</code></pre>
-<pre><code>## No documentation for &#39;getME&#39; in specified packages and libraries:
-## you could try &#39;??getME&#39;</code></pre>
+?merMod
+methods(class=&quot;merMod&quot;)
+?getME</code></pre>
 </div>
 <div id="lamb-data" class="section level2">
 <h2>Lamb data</h2>
@@ -437,13 +434,12 @@ summary {
 <p>Sheep glossary: <a href="http://www.sheep101.info/201/glossary.html" class="uri">http://www.sheep101.info/201/glossary.html</a></p>
 <p><code>lamb_lab1.csv</code> contains a subset of the data (Line 1 and 2).</p>
 <pre class="r"><code>library(lme4)
-library(tidyverse)
 
-lamb &lt;- read.csv(file = &quot;lamb_lab1.csv&quot;) %&gt;%
-  mutate_at(c(&quot;Sire&quot;, &quot;Line&quot;, &quot;Age&quot;), as.factor)
+lamb &lt;- read.csv(file = &quot;lamb_lab1.csv&quot;)
+cols &lt;- c(&quot;Sire&quot;, &quot;Line&quot;, &quot;Age&quot;)
+lamb[cols] &lt;- lapply(lamb[cols], as.factor)
 
-lamb %&gt;% 
-  knitr::kable()</code></pre>
+knitr::kable(lamb)</code></pre>
 <table>
 <thead>
 <tr class="header">
