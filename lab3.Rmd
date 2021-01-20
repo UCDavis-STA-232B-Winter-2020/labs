@@ -134,6 +134,8 @@ $\text{tr}(PV) = n - p$.
 
 $PVP = P$
 
+At the end, you can show the above t-distribution business results in equation (1.23) which was originally derived from Gaussain distribution.
+
 # HW 2.4
 
 For the Lambs data of Project 1, derive a Wald-test statistic, in as explicit form as possible, for testing the hypothesis that there is no difference among the lines. What is the asymptotic distribution of the Wald-test?
