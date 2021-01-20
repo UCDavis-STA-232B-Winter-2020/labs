@@ -140,22 +140,9 @@ For the Lambs data of Project 1, derive a Wald-test statistic, in as explicit fo
 
 #### Hints:
 
-Simply Page 177 in lecture note.
+Page 133 in lecture note.
 
-The model for the Lambs data of Project 1 is
-
-$$
-y_{ijk} = \mathbf{x}^\prime_{ijk} \boldsymbol{\beta} + s_{ij} + e_{ijk} = l_i + a_1 x_{ijk,1} + a_2 x_{ijk, 2} + s_{ij} + e_{ijk}
-$$
-$$
-1 \leq k \leq n_{ij}
-$$
-$$
-\boldsymbol{\beta} = (l_1, l_2, l_3, l_4, l_5, a_1, a_2)'
-$$
-
-The $i^{th}$ component of $\mathbf{x}_{ijk}$ is $1$ for $1 \leq i \leq 5$. The $j^{th}$ component, $1 \leq i \leq 5$ and $j \neq i$, of $\mathbf{x}_{ijk}$ is $0$. The $6^{th}$ component of $\mathbf{x}_{ijk}$ is $x_{ijk,1}$. The $7^{th}$ component of $\mathbf{x}_{ijk}$ is $x_{ijk,2}$.
-
+Page 177 in lecture note.
 
 You should be able to explicitly write down the matrices $\hat{V}$, $\hat{V}^{-1}$ in terms of $\tau$, $\sigma$ and $n_{ij}$. Then you explicitly write down $X' \hat{V}^{-1} X$ in terms of $\hat{\tau}$, $\hat{\sigma}$, $x_{ijk}$ and $n_{ij}$.
 
