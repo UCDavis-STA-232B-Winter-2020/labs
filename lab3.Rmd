@@ -159,3 +159,84 @@ The $i^{th}$ component of $\mathbf{x}_{ijk}$ is $1$ for $1 \leq i \leq 5$. The $
 
 You should be able to explicitly write down the matrices $\hat{V}$, $\hat{V}^{-1}$ in terms of $\tau$, $\sigma$ and $n_{ij}$. Then you explicitly write down $X' \hat{V}^{-1} X$ in terms of $\hat{\tau}$, $\hat{\sigma}$, $x_{ijk}$ and $n_{ij}$.
 
+## Lamb data
+
+Let's look at the Lamb dataset in the textbook (the table 1.2 in Jiang 2007, same as the table 1 in Harville 1985).
+
+>    Harville, David A., and Alan P. Fenech. "Confidence Intervals for a Variance Ratio, or for Heritability, in an Unbalanced Mixed Linear Model." Biometrics 41, no. 1 (1985): 137-52. doi:10.2307/2530650. <br>
+> https://www.jstor.org/stable/2530650
+
+> For purposes of illustration, we introduce in Table 1 some data consisting of the weights at
+> birth of 62 single-birth male lambs. These data (provided by G. E. Bradford, Department
+> of Animal Science, University of California, Davis) come from five distinct population
+> lines (two control lines and three selection lines). Each lamb was the progeny of one of 23
+> rams, and each lamb had a different dam. Age of dam was recorded as belonging to one of
+> three categories, numbered 1 (1-2 years), 2 (2-3 years), and 3 (over 3 years).
+
+Sheep glossary: http://www.sheep101.info/201/glossary.html
+
+`lamb_lab1.csv` contains a subset of the data (Line 1 and 2).
+
+```{r message=FALSE}
+library(lme4)
+
+lamb <- read.csv(file = "lamb_lab1.csv")
+cols <- c("Sire", "Line", "Age")
+lamb[cols] <- lapply(lamb[cols], as.factor)
+
+knitr::kable(lamb)
+```
+
+Let's fit a linear mixed effect model!
+```{r}
+lamb_fitted <- lmer(Weight ~ Line + Age - 1 + (1|Sire), data=lamb)
+summary(lamb_fitted)
+```
+
+
+```{r}
+lamb_fitted_mle <- lmer(Weight ~ Line + Age - 1 + (1|Sire), data=lamb, REML = FALSE)
+summary(lamb_fitted_mle)
+```
+
+
+Lets do parametric bootstrap!
+```{r}
+mySumm <- function(mod) {
+   c(sigma_e = sigma(mod), sigma_r = sqrt(unlist(VarCorr(mod))))
+}
+booted_lamb_fitted <- bootMer(lamb_fitted, mySumm, nsim = 100, seed = 2047)
+```
+
+```{r}
+library(boot) # for nice print-out
+booted_lamb_fitted
+```
+
+```{r}
+?bootMer
+```
+
+
+# Project 1
+
+1. Reading: Write a few sentences to summary what is going on.
+2. Data Entry: Input the data from the table in textbook so you can fit the model here in R. Find you way to do it.
+3. Analysis using Maximum Likelihood: Fit the model with MLE, i.e. `REML = FALSE`.
+   i. Asymptotic covariance matrix, a.k.a. textbook formula
+   ii. Parametric bootstrap
+4. Analysis using REML: Fit the model with MLE, i.e. `REML = TRUE`.
+   i. Asymptotic covariance matrix, a.k.a. textbook formula
+   ii. Parametric bootstrap
+5. Discussion: Write something intelligent.
+
+Don't hand in raw R output as your report. Write paragraphs and tables.
+
+### Asymptotic covariance matrix
+
+Study section 1.3 of the textbook carefully.
+
+Long story short: Get the inverse of the Fisher information matrix of the $\hat{\theta}$'s. The ingredients you need are $X$ and $Z$. The recipe is section 1.3 of the textbook.
+
+
+

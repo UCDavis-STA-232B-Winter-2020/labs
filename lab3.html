@@ -471,6 +471,256 @@ y_{ijk} = \mathbf{x}^\prime_{ijk} \boldsymbol{\beta} + s_{ij} + e_{ijk} = l_i + 
 <p>The <span class="math inline">\(i^{th}\)</span> component of <span class="math inline">\(\mathbf{x}_{ijk}\)</span> is <span class="math inline">\(1\)</span> for <span class="math inline">\(1 \leq i \leq 5\)</span>. The <span class="math inline">\(j^{th}\)</span> component, <span class="math inline">\(1 \leq i \leq 5\)</span> and <span class="math inline">\(j \neq i\)</span>, of <span class="math inline">\(\mathbf{x}_{ijk}\)</span> is <span class="math inline">\(0\)</span>. The <span class="math inline">\(6^{th}\)</span> component of <span class="math inline">\(\mathbf{x}_{ijk}\)</span> is <span class="math inline">\(x_{ijk,1}\)</span>. The <span class="math inline">\(7^{th}\)</span> component of <span class="math inline">\(\mathbf{x}_{ijk}\)</span> is <span class="math inline">\(x_{ijk,2}\)</span>.</p>
 <p>You should be able to explicitly write down the matrices <span class="math inline">\(\hat{V}\)</span>, <span class="math inline">\(\hat{V}^{-1}\)</span> in terms of <span class="math inline">\(\tau\)</span>, <span class="math inline">\(\sigma\)</span> and <span class="math inline">\(n_{ij}\)</span>. Then you explicitly write down <span class="math inline">\(X&#39; \hat{V}^{-1} X\)</span> in terms of <span class="math inline">\(\hat{\tau}\)</span>, <span class="math inline">\(\hat{\sigma}\)</span>, <span class="math inline">\(x_{ijk}\)</span> and <span class="math inline">\(n_{ij}\)</span>.</p>
 </div>
+<div id="lamb-data" class="section level2">
+<h2>Lamb data</h2>
+<p>Let’s look at the Lamb dataset in the textbook (the table 1.2 in Jiang 2007, same as the table 1 in Harville 1985).</p>
+<blockquote>
+<p>Harville, David A., and Alan P. Fenech. “Confidence Intervals for a Variance Ratio, or for Heritability, in an Unbalanced Mixed Linear Model.” Biometrics 41, no. 1 (1985): 137-52. <a href="doi:10.2307/2530650" class="uri">doi:10.2307/2530650</a>. <br> <a href="https://www.jstor.org/stable/2530650" class="uri">https://www.jstor.org/stable/2530650</a></p>
+</blockquote>
+<blockquote>
+<p>For purposes of illustration, we introduce in Table 1 some data consisting of the weights at birth of 62 single-birth male lambs. These data (provided by G. E. Bradford, Department of Animal Science, University of California, Davis) come from five distinct population lines (two control lines and three selection lines). Each lamb was the progeny of one of 23 rams, and each lamb had a different dam. Age of dam was recorded as belonging to one of three categories, numbered 1 (1-2 years), 2 (2-3 years), and 3 (over 3 years).</p>
+</blockquote>
+<p>Sheep glossary: <a href="http://www.sheep101.info/201/glossary.html" class="uri">http://www.sheep101.info/201/glossary.html</a></p>
+<p><code>lamb_lab1.csv</code> contains a subset of the data (Line 1 and 2).</p>
+<pre class="r"><code>library(lme4)
+
+lamb &lt;- read.csv(file = &quot;lamb_lab1.csv&quot;)
+cols &lt;- c(&quot;Sire&quot;, &quot;Line&quot;, &quot;Age&quot;)
+lamb[cols] &lt;- lapply(lamb[cols], as.factor)
+
+knitr::kable(lamb)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">Weight</th>
+<th align="left">Sire</th>
+<th align="left">Line</th>
+<th align="left">Age</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">6.2</td>
+<td align="left">11</td>
+<td align="left">1</td>
+<td align="left">1</td>
+</tr>
+<tr class="even">
+<td align="right">13.0</td>
+<td align="left">12</td>
+<td align="left">1</td>
+<td align="left">1</td>
+</tr>
+<tr class="odd">
+<td align="right">9.5</td>
+<td align="left">13</td>
+<td align="left">1</td>
+<td align="left">1</td>
+</tr>
+<tr class="even">
+<td align="right">10.1</td>
+<td align="left">13</td>
+<td align="left">1</td>
+<td align="left">1</td>
+</tr>
+<tr class="odd">
+<td align="right">11.4</td>
+<td align="left">13</td>
+<td align="left">1</td>
+<td align="left">1</td>
+</tr>
+<tr class="even">
+<td align="right">11.8</td>
+<td align="left">13</td>
+<td align="left">1</td>
+<td align="left">2</td>
+</tr>
+<tr class="odd">
+<td align="right">12.9</td>
+<td align="left">13</td>
+<td align="left">1</td>
+<td align="left">3</td>
+</tr>
+<tr class="even">
+<td align="right">13.1</td>
+<td align="left">13</td>
+<td align="left">1</td>
+<td align="left">3</td>
+</tr>
+<tr class="odd">
+<td align="right">10.4</td>
+<td align="left">14</td>
+<td align="left">1</td>
+<td align="left">1</td>
+</tr>
+<tr class="even">
+<td align="right">8.5</td>
+<td align="left">14</td>
+<td align="left">1</td>
+<td align="left">2</td>
+</tr>
+<tr class="odd">
+<td align="right">13.5</td>
+<td align="left">21</td>
+<td align="left">2</td>
+<td align="left">3</td>
+</tr>
+<tr class="even">
+<td align="right">10.1</td>
+<td align="left">22</td>
+<td align="left">2</td>
+<td align="left">2</td>
+</tr>
+<tr class="odd">
+<td align="right">11.0</td>
+<td align="left">22</td>
+<td align="left">2</td>
+<td align="left">3</td>
+</tr>
+<tr class="even">
+<td align="right">14.0</td>
+<td align="left">22</td>
+<td align="left">2</td>
+<td align="left">3</td>
+</tr>
+<tr class="odd">
+<td align="right">15.5</td>
+<td align="left">22</td>
+<td align="left">2</td>
+<td align="left">3</td>
+</tr>
+<tr class="even">
+<td align="right">12.0</td>
+<td align="left">23</td>
+<td align="left">2</td>
+<td align="left">1</td>
+</tr>
+<tr class="odd">
+<td align="right">11.5</td>
+<td align="left">24</td>
+<td align="left">2</td>
+<td align="left">1</td>
+</tr>
+<tr class="even">
+<td align="right">10.8</td>
+<td align="left">24</td>
+<td align="left">2</td>
+<td align="left">3</td>
+</tr>
+</tbody>
+</table>
+<p>Let’s fit a linear mixed effect model!</p>
+<pre class="r"><code>lamb_fitted &lt;- lmer(Weight ~ Line + Age - 1 + (1|Sire), data=lamb)
+summary(lamb_fitted)</code></pre>
+<pre><code>## Linear mixed model fit by REML [&#39;lmerMod&#39;]
+## Formula: Weight ~ Line + Age - 1 + (1 | Sire)
+##    Data: lamb
+## 
+## REML criterion at convergence: 63.9
+## 
+## Scaled residuals: 
+##     Min      1Q  Median      3Q     Max 
+## -1.8317 -0.5386  0.1904  0.4412  1.3102 
+## 
+## Random effects:
+##  Groups   Name        Variance Std.Dev.
+##  Sire     (Intercept) 0.7477   0.8647  
+##  Residual             3.0941   1.7590  
+## Number of obs: 18, groups:  Sire, 8
+## 
+## Fixed effects:
+##       Estimate Std. Error t value
+## Line1  10.2006     0.8302  12.287
+## Line2  11.1198     1.0504  10.586
+## Age2   -0.4756     1.2397  -0.384
+## Age3    2.0036     1.0600   1.890
+## 
+## Correlation of Fixed Effects:
+##       Line1  Line2  Age2  
+## Line2  0.230              
+## Age2  -0.372 -0.349       
+## Age3  -0.305 -0.653  0.377</code></pre>
+<pre class="r"><code>lamb_fitted_mle &lt;- lmer(Weight ~ Line + Age - 1 + (1|Sire), data=lamb, REML = FALSE)</code></pre>
+<pre><code>## boundary (singular) fit: see ?isSingular</code></pre>
+<pre class="r"><code>summary(lamb_fitted_mle)</code></pre>
+<pre><code>## Linear mixed model fit by maximum likelihood  [&#39;lmerMod&#39;]
+## Formula: Weight ~ Line + Age - 1 + (1 | Sire)
+##    Data: lamb
+## 
+##      AIC      BIC   logLik deviance df.resid 
+##     81.5     86.9    -34.8     69.5       12 
+## 
+## Scaled residuals: 
+##     Min      1Q  Median      3Q     Max 
+## -2.4833 -0.4515  0.2220  0.5703  1.5890 
+## 
+## Random effects:
+##  Groups   Name        Variance Std.Dev.
+##  Sire     (Intercept) 0.000    0.00    
+##  Residual             2.788    1.67    
+## Number of obs: 18, groups:  Sire, 8
+## 
+## Fixed effects:
+##       Estimate Std. Error t value
+## Line1  10.3467     0.6301  16.421
+## Line2  11.0099     0.8859  12.428
+## Age2   -0.4344     1.1328  -0.383
+## Age3    2.1510     0.9560   2.250
+## 
+## Correlation of Fixed Effects:
+##       Line1  Line2  Age2  
+## Line2  0.364              
+## Age2  -0.466 -0.396       
+## Age3  -0.429 -0.730  0.350
+## optimizer (nloptwrap) convergence code: 0 (OK)
+## boundary (singular) fit: see ?isSingular</code></pre>
+<p>Lets do parametric bootstrap!</p>
+<pre class="r"><code>mySumm &lt;- function(mod) {
+   c(sigma_e = sigma(mod), sigma_r = sqrt(unlist(VarCorr(mod))))
+}
+booted_lamb_fitted &lt;- bootMer(lamb_fitted, mySumm, nsim = 100, seed = 2047)</code></pre>
+<pre class="r"><code>library(boot) # for nice print-out
+booted_lamb_fitted</code></pre>
+<pre><code>## 
+## PARAMETRIC BOOTSTRAP
+## 
+## 
+## Call:
+## bootMer(x = lamb_fitted, FUN = mySumm, nsim = 100, seed = 2047)
+## 
+## 
+## Bootstrap Statistics :
+##      original    bias    std. error
+## t1* 1.7590034 -0.264492   0.3801779
+## t2* 0.8647244  0.250967   0.8221662</code></pre>
+<pre><code>## 
+## 23 message(s): boundary (singular) fit: see ?isSingular</code></pre>
+<pre class="r"><code>?bootMer</code></pre>
+</div>
+</div>
+<div id="project-1" class="section level1">
+<h1>Project 1</h1>
+<ol style="list-style-type: decimal">
+<li>Reading: Write a few sentences to summary what is going on.</li>
+<li>Data Entry: Input the data from the table in textbook so you can fit the model here in R. Find you way to do it.</li>
+<li>Analysis using Maximum Likelihood: Fit the model with MLE, i.e. <code>REML = FALSE</code>.
+<ol style="list-style-type: lower-roman">
+<li>Asymptotic covariance matrix, a.k.a. textbook formula</li>
+<li>Parametric bootstrap</li>
+</ol></li>
+<li>Analysis using REML: Fit the model with MLE, i.e. <code>REML = TRUE</code>.
+<ol style="list-style-type: lower-roman">
+<li>Asymptotic covariance matrix, a.k.a. textbook formula</li>
+<li>Parametric bootstrap</li>
+</ol></li>
+<li>Discussion: Write something intelligent.</li>
+</ol>
+<p>Don’t hand in raw R output as your report. Write paragraphs and tables.</p>
+<div id="asymptotic-covariance-matrix" class="section level3">
+<h3>Asymptotic covariance matrix</h3>
+<p>Study section 1.3 of the textbook carefully.</p>
+<p>Long story short: Get the inverse of the Fisher information matrix of the <span class="math inline">\(\hat{\theta}\)</span>’s. The ingredients you need are <span class="math inline">\(X\)</span> and <span class="math inline">\(Z\)</span>. The recipe is section 1.3 of the textbook.</p>
+</div>
 </div>
 
 
