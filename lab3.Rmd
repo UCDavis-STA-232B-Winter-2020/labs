@@ -1,0 +1,161 @@
+---
+title: "STA232Lab3"
+author: "Po"
+date: "1/20/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# HW 2.1
+
+Consider the Neyman-Scott problem (Example 9).
+
+(a) Show that the MLE of $\sigma^2$ based on
+$y_{ij}$, $i = 1,...,m$,$j = 1,2$ converges in probability to $\sigma^2 /2$, and therefore is inconsistent.
+
+(b) Show that the REML estimator of $\sigma^2$, that is, the MLE of $\sigma^2$ based on $z_i$, $i = 1, . . . , m$, converges in probability to $\sigma^2$, and therefore is consistent.
+
+Read also Example 1.7 and Exercise 1.8 in textbook Jiang 2007.
+
+Example 1.7 (Neyman–Scott problem). Neyman and Scott (1948) gave the following example which shows that, when the number of parameters increases with the sample size, the MLE may not be consistent. Suppose that two observations are collected from m individuals. Each individual has its own (unknown) mean, say, $\mu_i$ for the $i$th individual. Suppose that the observations are independent and normally distributed with variance $\sigma^2$. The problem of interest is to estimate $\sigma^2$. The model may be expressed as the following, $y_{ij} = \mu_i + \epsilon_{ij}$, where $\epsilon_{ij}$ are independent and distributed as $N(0, \sigma^2)$. Note that this may be viewed as a special case of the linear mixed model (1.1), in which $Z = 0$. However, it can be shown that the MLE of $\sigma^2$ is inconsistent (Exercise 1.8).
+
+#### Hints:
+
+Use weak law of large numbers:
+
+if $X_1, \dots, X_n$ i.i.d with $\text{E}(X) < \infty$ and $\text{Var}(X) < \infty$ then
+$$
+\frac{1}{n}\sum_{i = 1}^n X_i \xrightarrow{\text{P}} \text{E}(X)
+$$
+
+# HW 2.2
+
+Exercise 1.12 of Jiang (2007).
+
+1.12. Show that, under the balanced one-way random effects model (i.e., Example 1.1 with $k_i = k$, $1 \leq i \leq m$), the REML equations for estimating $\sigma^2$ and $\tau^2$ are equivalent to (1.22). Obtain the solution to these equations. Also derive the asymptotic covariance matrix of the REML estimators.
+
+\begin{align*}
+y_{ij} &= \mu + \alpha_i + \epsilon_{ij} \\
+i &= 1, \dots, m \\
+j &= 1, \dots, k \\
+\alpha_i &\sim N(0, \sigma^2) \\
+\epsilon_{ij} &\sim N(0, \tau^2)
+\end{align*}
+
+#### Hints:
+
+Here I am trying to show you how the solution looks like, so you wouldn't waste too much time walking toward bad direction. You need to show by yourself how you get here.
+
+$$
+Y = ( y_{11}, \dots, y_{1k}, \dots, y_{m1}, \dots, y_{mk})'
+$$
+
+$$
+X = 1_m \otimes 1_k
+$$
+
+$$
+Z = I_m \otimes 1_k
+$$
+
+$$
+V = I_m \otimes (\tau^2 I_k + \sigma^2 1_k 1_k')
+$$
+
+By Woodbury matrix identity,
+
+$$
+V^{-1} = I_m \otimes \frac{1}{\tau^2} \left( I_k - \frac{\sigma^2}{\tau^2 + k \sigma^2} 1_k 1_k' \right).
+$$
+Then, show off you skills in https://en.wikipedia.org/wiki/Kronecker_product
+
+\newcommand{\by}{\mathbf{y}}
+\newcommand{\bY}{\mathbf{Y}}
+\newcommand{\be}{\boldsymbol{\epsilon}}
+\newcommand{\ba}{\boldsymbol{\alpha}}
+\newcommand{\bb}{\boldsymbol{\beta}}
+
+\newcommand{\bX}{\mathbf{X}}
+\newcommand{\bZ}{\mathbf{Z}}
+\newcommand{\bI}{\mathbf{I}}
+\newcommand{\bG}{\mathbf{G}}
+\newcommand{\bR}{\mathbf{R}}
+\newcommand{\bV}{\mathbf{V}}
+\newcommand{\bP}{\mathbf{P}}
+\newcommand{\bOne}{\mathbf{1}}
+
+\newcommand{\diag}{\text{diag}}
+\newcommand{\Var}{\text{Var}}
+\newcommand{\E}{\text{E}}
+
+You should be able to get the $\bP$ like this
+
+$\bP = \dfrac{1}{\tau^2}\diag(\bV_k,...,\bV_k) - \dfrac{1}{mk(\tau^2 + k\sigma^2)}\bOne_{mk} \bOne_{mk}'$, where $\bV_k$ is a $k\times k$ matrix with  diagonals $1 - \dfrac{\sigma^2}{\tau^2 + k\sigma^2}$ and off-diagonals $\dfrac{-\sigma^2}{\tau^2 + k\sigma^2}$.
+
+Then try you best to simplify the matrix equations into the equations required by the exercise.
+
+For the estimated asymptotic covariance matrix of $\hat{\theta}$, it will involve the matrices $\bZ$ and $\bP$. You can further express it in terms of things like $k$, $m$, MSA, MSE... but it is messy. If you can show it, it is the best. If you couldn't, show reasonable work!
+
+
+# HW 2.3
+
+Exercise 1.14 in Jiang (2007).
+
+1.14. Show that the REML equations derived under the multivariate $t$-distribution (see Section 1.4.1) are equivalent to those derived under the multivariate normal distribution.
+
+#### Hints:
+
+I can guide you to show the REML equation under the ANOVA model ( equation (1.2) ).
+
+Firstly, as a warm-up, try deriving REML equations (1.23) and (1.25) in Gaussian distribution in ANOVA model. It is exercise 1.13.
+
+Now get to the t-distribution business. You should be able to get:
+$$l_R(\theta) = c - \frac{1}{2}\log(|A'VA|) - \frac{n-p+d}{2}\log\left(1 + \frac{1}{d}y'Py \right) $$
+and then the REML equation is
+$$
+(n-p+d)y'P\frac{\partial V}{\partial \theta}Py = tr\left( P\frac{\partial V}{\partial \theta}\right) (d+y'Py)
+$$
+
+Here, if $d+y'Py = n-p+d$, you get the REML equation exactly as with Gaussian.
+
+Then, assume $\bV$ is in the form of ANOVA model, i.e. $V = \tau^2I_n + \sum_{i=1}^s\sigma_i^2Z_iZ_i'$. Plug-in the $\tau$ and $\sigma_i$ into the above. Then try to get $y'Py = n-p$.
+
+Here are some equations you should be able to show:
+
+$p = \text{rank}(X)$
+
+$\text{rank}(A) = n - p$
+
+$\text{tr}(PV) = n - p$.
+
+$PVP = P$
+
+# HW 2.4
+
+For the Lambs data of Project 1, derive a Wald-test statistic, in as explicit form as possible, for testing the hypothesis that there is no difference among the lines. What is the asymptotic distribution of the Wald-test?
+
+#### Hints:
+
+Simply Page 177 in lecture note.
+
+The model for the Lambs data of Project 1 is
+
+$$
+y_{ijk} = \mathbf{x}^\prime_{ijk} \boldsymbol{\beta} + s_{ij} + e_{ijk} = l_i + a_1 x_{ijk,1} + a_2 x_{ijk, 2} + s_{ij} + e_{ijk}
+$$
+$$
+1 \leq k \leq n_{ij}
+$$
+$$
+\boldsymbol{\beta} = (l_1, l_2, l_3, l_4, l_5, a_1, a_2)'
+$$
+
+The $i^{th}$ component of $\mathbf{x}_{ijk}$ is $1$ for $1 \leq i \leq 5$. The $j^{th}$ component, $1 \leq i \leq 5$ and $j \neq i$, of $\mathbf{x}_{ijk}$ is $0$. The $6^{th}$ component of $\mathbf{x}_{ijk}$ is $x_{ijk,1}$. The $7^{th}$ component of $\mathbf{x}_{ijk}$ is $x_{ijk,2}$.
+
+
+You should be able to explicitly write down the matrices $\hat{V}$, $\hat{V}^{-1}$ in terms of $\tau$, $\sigma$ and $n_{ij}$. Then you explicitly write down $X' \hat{V}^{-1} X$ in terms of $\hat{\tau}$, $\hat{\sigma}$, $x_{ijk}$ and $n_{ij}$.
+
