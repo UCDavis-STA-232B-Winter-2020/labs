@@ -69,6 +69,7 @@ lamb_fitted <- lmer(Weight ~ Line + Age - 1 + (1|Sire), data=lamb)
 summary(lamb_fitted)
 ```
 
+Confident interval
 ```{r}
 confint(lamb_fitted, method = "Wald")
 ```
@@ -81,6 +82,7 @@ confint(lamb_fitted, method = "boot")
 ?confint.merMod
 ```
 
+Fisher information matrix
 ```{r}
 y = getME(lamb_fitted, "y")
 X = getME(lamb_fitted, "X")

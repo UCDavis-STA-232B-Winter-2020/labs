@@ -322,6 +322,7 @@ summary(lamb_fitted)</code></pre>
 ## Line2  0.230              
 ## Age2  -0.372 -0.349       
 ## Age3  -0.305 -0.653  0.377</code></pre>
+<p>Confident interval</p>
 <pre class="r"><code>confint(lamb_fitted, method = &quot;Wald&quot;)</code></pre>
 <pre><code>##              2.5 %    97.5 %
 ## .sig01          NA        NA
@@ -333,15 +334,16 @@ summary(lamb_fitted)</code></pre>
 <pre class="r"><code>confint(lamb_fitted, method = &quot;boot&quot;)</code></pre>
 <pre><code>## Computing bootstrap confidence intervals ...</code></pre>
 <pre><code>## 
-## 111 message(s): boundary (singular) fit: see ?isSingular</code></pre>
+## 125 message(s): boundary (singular) fit: see ?isSingular</code></pre>
 <pre><code>##             2.5 %    97.5 %
-## .sig01  0.0000000  2.498034
-## .sigma  0.8873367  2.300230
-## Line1   8.5763567 11.755191
-## Line2   9.1057162 13.289136
-## Age2   -3.3132387  1.890395
-## Age3   -0.1977648  4.190211</code></pre>
+## .sig01  0.0000000  2.634162
+## .sigma  0.8683301  2.299499
+## Line1   8.5021715 11.703477
+## Line2   8.9932560 13.195782
+## Age2   -3.0243073  2.157649
+## Age3   -0.2658712  4.324128</code></pre>
 <pre class="r"><code>?confint.merMod</code></pre>
+<p>Fisher information matrix</p>
 <pre class="r"><code>y = getME(lamb_fitted, &quot;y&quot;)
 X = getME(lamb_fitted, &quot;X&quot;)
 Z = getME(lamb_fitted, &quot;Z&quot;)
