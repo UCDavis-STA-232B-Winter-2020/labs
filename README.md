@@ -4,3 +4,4 @@
 - [Lab 2](https://ucdavis-sta-232b-winter-2021.github.io/labs/lab2.html) 
 - [Lab 3](https://ucdavis-sta-232b-winter-2021.github.io/labs/lab3.html) 
 - [Lab 4](https://ucdavis-sta-232b-winter-2021.github.io/labs/lab4.html) 
+- [Lab 5](https://ucdavis-sta-232b-winter-2021.github.io/labs/lab5.html) 

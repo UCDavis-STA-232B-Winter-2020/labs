@@ -1,0 +1,153 @@
+---
+title: "STA232Lab5"
+author: "Po"
+date: "2/3/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Project 1
+
+1. Reading: Write a few sentences to summary what is going on.
+2. Data Entry: Input the data from the table in textbook so you can fit the model here in R. Find you way to do it.
+3. Analysis using Maximum Likelihood: Fit the model with MLE, i.e. `REML = FALSE`.
+   i. Asymptotic covariance matrix, a.k.a. textbook formula
+   ii. Parametric bootstrap
+4. Analysis using REML: Fit the model with MLE, i.e. `REML = TRUE`.
+   i. Asymptotic covariance matrix, a.k.a. textbook formula
+   ii. Parametric bootstrap
+5. Discussion: Write something educational.
+
+Don't hand in raw R output as your report. Write paragraphs and tables.
+
+### Asymptotic covariance matrix
+
+Study section 1.3 of the textbook carefully.
+
+Long story short: Get the inverse of the Fisher information matrix of the $\hat{\theta}$'s. The recipe is section 1.3 of the textbook.
+
+## `lme4`
+
+- https://arxiv.org/pdf/1406.5823.pdf
+
+- https://github.com/lme4/lme4
+
+## Lamb data
+
+Let's look at the Lamb dataset in the textbook (the table 1.2 in Jiang 2007, same as the table 1 in Harville 1985).
+
+>    Harville, David A., and Alan P. Fenech. "Confidence Intervals for a Variance Ratio, or for Heritability, in an Unbalanced Mixed Linear Model." Biometrics 41, no. 1 (1985): 137-52. doi:10.2307/2530650. <br>
+> https://www.jstor.org/stable/2530650
+
+> For purposes of illustration, we introduce in Table 1 some data consisting of the weights at
+> birth of 62 single-birth male lambs. These data (provided by G. E. Bradford, Department
+> of Animal Science, University of California, Davis) come from five distinct population
+> lines (two control lines and three selection lines). Each lamb was the progeny of one of 23
+> rams, and each lamb had a different dam. Age of dam was recorded as belonging to one of
+> three categories, numbered 1 (1-2 years), 2 (2-3 years), and 3 (over 3 years).
+
+Sheep glossary: http://www.sheep101.info/201/glossary.html
+
+`lamb_lab1.csv` contains a subset of the data (Line 1 and 2).
+
+```{r message=FALSE}
+library(lme4)
+
+lamb <- read.csv(file = "lamb_lab1.csv")
+cols <- c("Sire", "Line", "Age")
+lamb[cols] <- lapply(lamb[cols], as.factor)
+
+knitr::kable(head(lamb))
+```
+
+Let's fit a linear mixed effect model!
+```{r}
+lamb_fitted <- lmer(Weight ~ Line + Age - 1 + (1|Sire), data=lamb)
+summary(lamb_fitted)
+```
+
+```{r}
+confint(lamb_fitted, method = "Wald")
+```
+
+```{r}
+confint(lamb_fitted, method = "boot")
+```
+
+```{r}
+?confint.merMod
+```
+
+```{r}
+y = getME(lamb_fitted, "y")
+X = getME(lamb_fitted, "X")
+Z = getME(lamb_fitted, "Z")
+n = getME(lamb_fitted, "n")
+
+sigma_sq = sigma(lamb_fitted)
+tau_sq   = unlist(VarCorr(lamb_fitted))
+
+ZZt = Z %*% t(Z)
+V = tau_sq * diag(n) + sigma_sq * ZZt
+Vinverse = solve(V)
+P = Vinverse - solve(V, X %*% solve(t(X) %*% solve(V, X), t(X)%*%Vinverse))
+
+tr = function(x) sum(diag(x))
+
+Fisher_informatin_matrix_beta = t(X)%*%solve(V, X)
+Fisher_informatin_matrix_varc = 0.5*matrix(c(tr(P%*%P), tr(P%*%ZZt%*%P),
+                                        tr(P%*%P%*%ZZt), tr(P%*%ZZt%*%P%*%ZZt))
+                                      , nrow=2, ncol=2)
+```
+
+```{r}
+solve(Fisher_informatin_matrix_beta)
+```
+
+```{r}
+solve(Fisher_informatin_matrix_varc)
+```
+
+```{r, message=FALSE, eval=FALSE}
+?getME
+?VarCorr
+```
+
+Simulation with fitted parameters.
+```{r}
+simulate(lamb_fitted, nsim = 5, seed = 1997)
+```
+
+Lets do parametric bootstrap!
+```{r}
+mySumm <- function(mod) {
+   c(sigma_e = sigma(mod), sigma_r = sqrt(unlist(VarCorr(mod))))
+}
+booted_lamb_fitted <- bootMer(lamb_fitted, mySumm, nsim = 100, seed = 2047)
+```
+
+```{r}
+library(boot) # for nice print-out
+booted_lamb_fitted
+```
+
+```{r}
+?simulate.merMod
+?bootMer
+```
+
+EBLUP of the "mean of lamb weights conditional on sire effects" and sire effects
+```{r}
+lamb_extend <- lamb
+lamb_extend["EBLUP_Weight_way1"] <- predict(lamb_fitted)
+lamb_extend["EBLUP_Weight_way2"] <- X%*%fixef(lamb_fitted) + as.matrix(Z%*%ranef(lamb_fitted)$Sire$`(Intercept)`)
+lamb_extend["EBLUP_Zalpha"] <- as.matrix(Z%*%ranef(lamb_fitted)$Sire$`(Intercept)`)
+knitr::kable(head(lamb_extend))
+```
+
+```{r}
+?predict.merMod
+```
