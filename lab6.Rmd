@@ -73,8 +73,14 @@ lamb_reml <- lmer(Weight ~ Line + Age - 1 + (1|Sire), data = lamb)
 EBLUP of "mean of lamb weights conditional on sire effects" (a.k.a EBLUPs of $\text{E}( y | \alpha) = X\beta + Z\alpha$)
 ```{r}
 head(fitted(lamb_reml))
-# predict(lamb_reml)
-# getME(lamb_reml, "mu")
+```
+
+```{r}
+head(predict(lamb_reml))
+```
+
+```{r}
+head(getME(lamb_reml, "mu"))
 ```
 
 ```{r}
@@ -92,7 +98,7 @@ lamb_reml %>%
   geom_pointrange(aes(ymin = condval - condsd, ymax = condval + condsd))
 ```
 
-The "mean" can be represented by a matrix:
+The "mean"s can be represented by a matrix:
 $$
 M_i Y := \frac{1}{N_i} \sum_{j=1}^{n_i} \sum_{k=1}^{n_{ij}} y_{ijk}
 $$
