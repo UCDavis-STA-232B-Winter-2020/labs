@@ -1,0 +1,130 @@
+---
+title: "STA232Lab6"
+author: "Po"
+date: "2/10/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# HW 3
+
+#### Question
+
+a) Use the linearization (i.e., Taylor series) method to derive a bias-corrected estimator of $g(\theta)$, denoted by $\hat{g}_\text{bc}$, so that 
+$E(\hat{g}_\text{bc}) = g(\theta) + o(n^{-1})$
+
+b) Consider the special case of estimating the population standard deviation (s.d.), that is, $\sigma$, where $\sigma^2 = \text{var}(X_i)$, assuming that $X_i$ is normal.
+
+c) Run a simulation study to compare the bias of $\hat{\sigma} = S$ and that of $\hat{\sigma}_\text{bc} = \hat{g}_\text{bc}$ in part b.
+
+#### Hints for HW3
+
+- First of all, while the sample variance is unbiased (the famous $(n-1)$ correction), the sample SD (square root of sample variance) is biased. Read
+
+  https://en.wikipedia.org/wiki/Unbiased_estimation_of_standard_deviation
+
+  https://en.wikipedia.org/wiki/Variance#Distribution_of_the_sample_variance
+
+  In this homework, we derive a bias correction formula and apply it to sample SD.
+
+- Big O little O notation
+
+  https://en.wikipedia.org/wiki/Big_O_notation#Family_of_Bachmann%E2%80%93Landau_notations
+
+  - $g(n) = O(f(n))$ means $g(n)/f(n) \rightarrow c$ for some constant.
+  - $g(n) = o(f(n))$ means $g(n)/f(n) \rightarrow 0$
+
+- Goal: Find a formula for $\hat{g}_\text{bc}$ so that $E[\hat{g}_\text{bc}] = g(\theta) + o(n^{-1})$.
+
+- Using Taylor series expansion and some reasonable assumptions/approximations, we have
+  $$E[g(\hat{\theta})] = g(\theta) + \frac12 g''(\theta) E[(\hat{\theta} - \theta)^2] + O(n^{-3/2})$$ 
+  because:
+  $$g(\hat{\theta}) = g(\theta) + g'(\theta) (\hat{\theta} - \theta) + \frac12 g''(\theta) (\hat{\theta} - \theta)^2 + ( \text{something look like }O(n^{-3/2})) \\$$
+  and $\hat{\theta}$ is unbiased, a.k.a. $E[\hat{\theta} - \theta] = 0$.
+  
+- From the above, we have
+  $$E[g(\hat{\theta})] - \frac12 g''(\theta) E[(\hat{\theta} - \theta)^2] = g(\theta) + O(n^{-3/2}) = g(\theta) + o(n^{-1})$$
+  Motivated from this equation, if we define $\hat{g}_\text{bc} := g(\hat{\theta}) - b(\hat{\theta})$ where $b$ can be carefully chosen so that $E[b(\hat{\theta})] \approx \frac12 g''(\theta) E[(\hat{\theta} - \theta)^2]$, we archieve my goal!
+
+- How about $b(\theta) := \frac12 g''(\theta) E[(\hat{\theta} - \theta)^2]$? Then $b(\hat{\theta}) = \frac12 g''(\hat{\theta}) E[(\hat{\theta} - \theta)^2]$). Try to show $b(\theta) - E[b(\hat{\theta})] = o(n^{-1})$, which is what we mean by $E[b(\hat{\theta})] \approx b(\theta)$. We need one more assumption: $E[(\hat{\theta}-\theta)^2] = O(n^{-1})$. 
+
+
+
+
+# Project 2
+
+https://cran.r-project.org/web/packages/lme4/vignettes/lmer.pdf
+
+```{r message=FALSE}
+library(tidyverse)
+library(lme4)
+lamb <- read.csv(file = "lamb.csv") %>%
+        mutate(Sire = factor(Sire),
+               Line = factor(Line),
+               Age  = factor(Age)
+        )
+lamb_reml <- lmer(Weight ~ Line + Age - 1 + (1|Sire), data = lamb)
+```
+
+EBLUP of "mean of lamb weights conditional on sire effects" (a.k.a EBLUPs of $\text{E}( y | \alpha) = X\beta + Z\alpha$)
+```{r}
+head(fitted(lamb_reml))
+# predict(lamb_reml)
+# getME(lamb_reml, "mu")
+```
+
+```{r}
+as.data.frame(ranef(lamb_reml))
+```
+
+"Error bar" in ggplot <br>
+https://ggplot2.tidyverse.org/reference/geom_linerange.html
+
+```{r}
+lamb_reml %>%
+  ranef() %>%
+  as.data.frame() %>%
+  ggplot(aes(grp, condval)) +
+  geom_pointrange(aes(ymin = condval - condsd, ymax = condval + condsd))
+```
+
+The "mean" can be represented by a matrix:
+$$
+M_i Y := \frac{1}{N_i} \sum_{j=1}^{n_i} \sum_{k=1}^{n_{ij}} y_{ijk}
+$$
+
+Then
+\begin{align*}
+L_i &= E(\frac{1}{N_i} \sum_{j=1}^{n_i} \sum_{k=1}^{n_{ij}} y_{ijk} | s) \\
+&= E\left(M_i Y \left| s \right. \right) \\
+&= E\left(M_i X\beta + M_i Z s + M_i \epsilon \left| s \right. \right) \\
+&= M_i X\beta + M_i Z s \\
+&=: a'\beta + b's \\
+\hat{L}_i &= a' \hat{\beta} + b'\hat{s}
+\end{align*}
+
+Following the notes, you should be able to derive some formulaes for jackknife:
+$$
+\text{EBLUP of }s = \hat{s} = \hat{\sigma}^2_s Z' \hat{V}^{-1}(y - X\hat{\beta})
+$$
+
+$$
+\hat{s}_{ij} = \frac{\hat{\sigma}^2_s}{\hat{\sigma}^2_e + n_{ij} \hat{\sigma}^2_s} \sum_{k=1}^{n_{ij}} (y_{ijk} - x'_{ijk} \hat{\beta})
+$$
+
+$$
+\text{MSPE}(\hat{s}_{ij}) = b_{ij}(\hat{\psi}) - \frac{m-1}{m} \sum_{(i',j')} \{ b_{ij} (\hat{\psi}_{-(i',j')}) -  b_{ij} (\hat{\psi})\} + \frac{m-1}{m} \sum_{(i',j')} \{ \hat{s}_{ij, -(i',j')} - \hat{s}_{ij} \}^2
+$$
+
+$$
+\hat{\psi} = (\hat{\beta}, \hat{\sigma}_s^2, \hat{\sigma}^2_e)
+$$
+
+$$
+b_{ij} (\hat{\psi}) = \frac{\hat{\sigma}^2_e \hat{\sigma}^2_s}{ \hat{\sigma}^2_e + n_{ij} \hat{\sigma}^2_s}
+$$
+
