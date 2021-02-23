@@ -1,0 +1,93 @@
+---
+title: "STA232Lab7"
+author: "Po"
+date: "2/24/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Midterm
+
+Q1 Po, Q2 Jiming
+
+# HW 4
+
+Problem 3.3: likelihood -> log-likelihood
+
+## GLMM
+
+```{r}
+UCBAdmissions
+```
+
+```{r message=FALSE}
+library(tidyverse)
+UCBAdmissions %>% 
+  apply(c(1,2), sum)
+```
+
+```{r}
+UCBAdmissions %>% 
+  apply(3, function(d){
+    c(Male   = d["Admitted", "Male"]/sum(d[, "Male"]),
+      Female = d["Admitted", "Female"]/sum(d[, "Female"]))
+  })
+```
+
+```{r}
+UCBAdmissions %>% 
+  apply(c(1,2), sum) %>%
+  (function(d){ 
+    c(Male   = d["Admitted", "Male"]/sum(d[, "Male"]),
+      Female = d["Admitted", "Female"]/sum(d[, "Female"]))
+  })
+```
+
+Preparing data
+```{r}
+admit = as.data.frame(UCBAdmissions)
+```
+
+#### Generalized linear model
+
+```{r}
+m1 = glm(Admit ~ Gender + Dept, family = binomial, data = admit, weights = Freq)
+summary(m1)
+```
+
+```{r}
+drop1(m1, test="Chisq")
+```
+
+
+#### Generalized linear mixed effect model fitted with adaptive Gauss-Hermite quadrature
+
+```{r message=FALSE}
+library(lme4)
+m2 = glmer(Admit ~ Gender + (1|Dept), family = binomial, data = admit, weights = Freq)
+summary(m2)
+```
+
+```{r}
+drop1(m2, test="Chisq")
+```
+
+```{r eval=FALSE}
+?drop1.merMod
+```
+
+#### Generalized linear mixed effect model in Bayesian posterior sampling
+
+```{r, message=FALSE}
+library(rstanarm)
+m3 <- stan_glmer(Admit ~ Gender + (1|Dept), family = binomial, data = admit, weights = Freq, refresh=0)
+summary(m3)
+```
+
+
+
+
+
