@@ -1,0 +1,195 @@
+---
+title: "STA232Lab8"
+author: "Po"
+date: "3/2/2020"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# HW 5
+
+Q1. Equation (5) in lecture note 2.
+
+Q2. "$y$'s are indpendent copies repected $K$ times" means you just factorize the likelihood as if those repeated $y$'s are independnet.
+
+## GLMM
+
+Finite Mixture Models for Proportions <br>
+S. P. Brooks, B. J. T. Morgan, M. S. Ridout and S. E. Pack <br>
+Biometrics Vol. 53, No. 3 (Sep., 1997), pp. 1097-1115 (19 pages) <br>
+https://www.jstor.org/stable/2533567?seq=1#page_scan_tab_contents
+
+Robust estimation in generalised linear mixed models <br>
+Jiming Jiang  Weihong Zhang <br>
+Biometrika, Volume 88, Issue 3, 1 October 2001, Pages 753–765 <br>
+https://academic.oup.com/biomet/article/88/3/753/340112
+
+The data set is fitted by generalized linear mixed model with Bernoulli response $y_{ij}$, $i = 1, \dots, 1328$, $j = 1, \dots, n_i$, where $n_i$ is the size of the $i$ th litter;
+
+$y_{ij} = 1$ if the $j$ th implant in the $i$ th litter is dead, and $y_{ij} = 0$ otherwise. 
+
+The total number of responses is $N = \sum_{i = 1}^{1328} n_i = 10533$. 
+
+![](mice_table.png)
+
+```{r echo=F, message=F}
+library(tidyverse)
+library(lme4)
+
+nlist <- list()
+nlist[[4]] <- c(7,2,3,NA,2)
+nlist[[5]] <- c(16,9,3,3,1,NA)
+
+mice <- data.frame(status = c(), litter = c(), freq = c())
+count <- 0
+for (k in 4:5) {
+for (l in 1:length(nlist[[k]])) {
+    if(!is.na(nlist[[k]][l])){
+        for(m in 1:nlist[[k]][l]){
+            count = count + 1
+            mice = rbind(mice,
+                         data.frame(status = c("Alive", "Dead"), 
+                                    litter = c(count, count), 
+                                    freq = c(k-(l-1), (l-1))))
+        }
+    }
+}}
+mice$litter = factor(mice$litter)
+
+mice <- as.data.frame(do.call(rbind, by(mice, mice$litter, function(x) c(sum(x$freq), x[x$status=="Dead",]$freq))))
+mice$litter = 1:dim(mice)[1]
+names(mice) = c("Nimplants", "Ndead", "litter")
+mice$litter = factor(mice$litter)
+```
+
+```{r}
+print(head(mice, 20))
+```
+The link function is logit. The linear predictor is $\eta_{ij} = \mu + \alpha_i$, where $\alpha_1 , \dots, \alpha_m$ are random effects independent and distributed as $N (0, \sigma^2)$, and $\sigma$ and $\mu$ are unknown parameters. 
+
+The exponential family is Bernoulli distribution, with $P(y_{ij} = 1 | \alpha) = p_{ij}$. Therefore we have $y_{ij}$ conditionally independent such that 
+$$
+\text{logit} \{ P(y_{ij} = 1 | \alpha) \} = \mu + \alpha_i .
+$$
+
+Find $\sigma$ and $\mu$ such that $\log f(y, \alpha| \mu, \sigma)$ is maximized. 
+
+```{r}
+m1 <- glmer(cbind(Ndead, Nimplants-Ndead) ~ 1 + (1|litter), family = binomial, data = mice)
+summary(m1)
+```
+
+```{r, message=FALSE}
+library(rstanarm)
+m2 <- stan_glmer(cbind(Ndead, Nimplants-Ndead) ~ 1 + (1|litter), family = binomial, data = mice, refresh=0)
+m2
+```
+
+
+# MCEM
+
+#### Goal
+Find
+$\text{argmax}_\theta f(y|\theta)$
+where
+$f(y| \theta) = \int f(y, \alpha| \theta) d\alpha$
+
+Instead, find
+$\text{argmax}_\theta E_{\alpha | y} [f(y, \alpha|\theta)]$
+
+#### EM algorithm
+
+- E-Step <br>
+  Construct the function $Q(\theta|\theta^{(k)}) := \text{E}( \log f(y, \alpha| \theta) | y, \theta^{(k)}) \approx \frac{1}{L}\sum_l \log f(y, \alpha_\text{MC}^{(l)} | \theta)$ <br>
+  where $\alpha_\text{MC}^{(l)}$'s are MCMC samples of $\alpha|y, \theta^{(k)}$
+
+  Use MCMC algorithm such as Metropolis-Hastings. In general we can use NUTS https://mc-stan.org/users/interfaces/rstan.
+
+- M-Step <br>
+  $\theta^{(k+1)} = \text{argmax}_\theta Q(\theta|\theta^{(k)})$
+  
+  Use `optim` in R.
+
+#### Metropolis-Hastings algorithm
+
+Draw MCMC samples of $\alpha|y, \theta^{(k)}$.
+
+https://en.wikipedia.org/wiki/Metropolis%E2%80%93Hastings_algorithm
+
+Burin-in: Use the stationary sequence
+
+Thining:  Independent samples
+
+#### Standard error estimation
+
+standard errors of the MLEs -- asymptotic covariance matrix -- Fisher information matrix
+
+Compute the observed Fisher information matrix for MCEM.
+
+> Gelman, Andrew, and Xiao-Li Meng, eds. Applied Bayesian modeling and causal inference from incomplete-data perspectives. John Wiley & Sons, 2004.
+> Page 256 equation (23.6)
+
+```{r message=F}
+library(tidyverse)
+library(lme4)
+lamb <- read.csv(file = "lamb.csv") %>%
+        mutate(Sire = factor(Sire),
+               Line = factor(Line),
+               Age  = factor(Age)
+        )
+lamb_reml <- lmer(Weight ~ 1 + (1|Sire), data = lamb)
+y = getME(lamb_reml, "y")
+X = getME(lamb_reml, "X")
+Z = getME(lamb_reml, "Z")
+r = 10
+
+E_step <- function(theta, y, X, Z, r) {
+  n = dim(Z)[1]
+  k = dim(Z)[2]
+  beta      <- theta$beta
+  tau_sq    <- theta$tau_sq
+  sigma_sq  <- theta$sigma_sq
+  
+  alpha_given_data = replicate(r, {
+                          solve(t(Z)%*%Z/tau_sq + diag(k)/sigma_sq,
+                                t(Z)%*%(y - X%*%beta + sqrt(tau_sq)*rnorm(n))/tau_sq
+                          ) +sqrt(1/sigma_sq)*rnorm(k)
+                     })
+  fr = function(x) {
+    mean(sapply(alpha_given_data, function(alpha) {
+      sum((y - (X * x[1] * 2 + Z %*% alpha))^2) / x[2] + n*log(x[2]) + sum(alpha^2) / x[3] + k*log(x[3])
+    }))
+  }
+  return(fr)
+}
+
+M_step <- function(fr, theta) {
+  out = optim(c(theta$beta[1]/2, theta$tau_sq, theta$sigma_sq), fr,
+              lower = 1e-10, upper = 20, method = "L-BFGS-B")
+  return(list(beta=array(2*out$par[1], 1), tau_sq=out$par[2], sigma_sq=out$par[3], val = out$val))
+}
+
+# Initialization
+theta = list(beta=array(mean(lamb$Weight), 1), tau_sq=sd(lamb$Weight)^2*0.5, sigma_sq=sd(lamb$Weight)^2*0.5)
+for(i in 1:6){
+  if(i==1) print(c("obj.", "beta", "tau_sq", "sigma_sq"))
+  # E step
+  qfun <- E_step(theta, y, X, Z, r+2*i)
+  # M step
+  theta <- M_step(qfun, theta)
+  # Print result
+  print(c(theta$val, theta$beta[1], theta$tau_sq, theta$sigma_sq))
+}
+```
+
+```{r message=F}
+
+summary(lamb_reml)
+```
+
+
