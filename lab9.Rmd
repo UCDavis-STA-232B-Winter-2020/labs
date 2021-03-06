@@ -132,6 +132,8 @@ $y_{ij} = 1$ if the $j$ th implant in the $i$ th litter is dead, and $y_{ij} = 0
 The total number of responses is $N = \sum_{i = 1}^{1328} n_i = 10533$. 
 
 ![](mice_table.png)
+
+
 Ugly codes I had long time ago. It works but it is a bad example brute-force for-loop. Please use vectorized R codes.
 ```{r message=F}
 library(tidyverse)
@@ -187,6 +189,14 @@ Find $\sigma$ and $\mu$ such that $\log f(y, \alpha| \mu, \sigma)$ is maximized.
 m1 <- glmer(cbind(Ndead, Nimplants-Ndead) ~ 1 + (1|litter), family = binomial, data = mice)
 summary(m1)
 ```
+
+#### Approximate integration
+
+Here is an example to compute deviance of GLMM model. It gives you some hints on what actually happens in numerical integration to approximate the likelihood/deviance. https://github.com/lme4/lme4/blob/master/misc/logLikGLMM/logLikGLMM.R
+
+The package `lme4` indeed uses Laplace approximation and Gaussian quadrature to do the MLE. You may utilize the package in fitting and analysis.
+
+However, we should understand the methods and be able to explain the methods, not just treating the fit as a blackbox output and reporting merely numbers.
 
 #### Sampling random effect given data and variance-compoment using MH
 
@@ -252,7 +262,7 @@ df <- melt(df,  id.vars = 'time', variable.name = 'series')
 ggplot(df, aes(time,value)) + geom_line() + facet_grid(series ~ .)
 ```
 
-#### Approximate integration
+It is okay to use MCMC methods other than Metropolis Hastings. Again, whatever method we use, we should understand what we are doing and explain it.
 
-https://github.com/lme4/lme4/blob/master/misc/logLikGLMM/logLikGLMM.R
+
 
