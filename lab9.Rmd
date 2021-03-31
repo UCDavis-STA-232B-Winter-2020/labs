@@ -263,6 +263,3 @@ ggplot(df, aes(time,value)) + geom_line() + facet_grid(series ~ .)
 ```
 
 It is okay to use MCMC methods other than Metropolis Hastings. Again, whatever method we use, we should understand what we are doing and explain it.
-
-
-
