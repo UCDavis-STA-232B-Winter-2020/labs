@@ -1,5 +1,7 @@
 # STA232B Labs
 
+RStudio: [![Binder](http://mybinder.org/badge_logo.svg)](http://mybinder.org/v2/gh/UCDavis-STA-232B-Winter-2021/labs/master?urlpath=rstudio)
+
 - [Lab 1](https://ucdavis-sta-232b-winter-2021.github.io/labs/lab1.html) 
 - [Lab 2](https://ucdavis-sta-232b-winter-2021.github.io/labs/lab2.html) 
 - [Lab 3](https://ucdavis-sta-232b-winter-2021.github.io/labs/lab3.html) 
